@@ -1,4 +1,4 @@
-package engine;
+package engine.model;
 
 public class QuizResponse {
     private final boolean success;
