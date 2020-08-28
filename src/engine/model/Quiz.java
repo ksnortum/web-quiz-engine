@@ -1,26 +1,25 @@
 package engine.model;
 
+import com.fasterxml.jackson.annotation.JsonView;
+
 public class Quiz {
+
+    @JsonView(Views.Public.class)
     private long id;
+
+    @JsonView(Views.Public.class)
     private String title;
+
+    @JsonView(Views.Public.class)
     private String text;
+
+    @JsonView(Views.Public.class)
     private String[] options;
 
+    @JsonView(Views.Internal.class)
+    private int answer;
+
     public Quiz() { };
-
-    public Quiz(long id, String title, String text, String[] options) {
-        this.id = id;
-        this.title = title;
-        this.text = text;
-        this.options = options;
-    }
-
-    public Quiz(QuizWithAnswer quizWithAnswer) {
-        this.id = quizWithAnswer.getId();
-        this.title = quizWithAnswer.getTitle();
-        this.text = quizWithAnswer.getText();
-        this.options = quizWithAnswer.getOptions();
-    }
 
     public long getId() {
         return id;
@@ -38,6 +37,10 @@ public class Quiz {
         return options;
     }
 
+    public int getAnswer() {
+        return answer;
+    }
+
     public void setId(long id) {
         this.id = id;
     }
@@ -52,5 +55,9 @@ public class Quiz {
 
     public void setOptions(String[] options) {
         this.options = options;
+    }
+
+    public void setAnswer(int answer) {
+        this.answer = answer;
     }
 }

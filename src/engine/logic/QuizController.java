@@ -1,9 +1,10 @@
 package engine.logic;
 
+import com.fasterxml.jackson.annotation.JsonView;
 import engine.exception.QuizNotFound;
 import engine.model.Quiz;
 import engine.model.QuizResponse;
-import engine.model.QuizWithAnswer;
+import engine.model.Views;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.HashMap;
@@ -13,38 +14,42 @@ import java.util.concurrent.atomic.AtomicLong;
 @RestController()
 @RequestMapping("/api")
 public class QuizController {
-    private final Map<Long, QuizWithAnswer> quizzes = new HashMap<>();
+    private final Map<Long, Quiz> quizzes = new HashMap<>();
     private final AtomicLong nextId = new AtomicLong(1);
 
+    @JsonView(Views.Internal.class)
     @PostMapping(value = "/quizzes", consumes = "application/json")
-    public Quiz createQuiz(@RequestBody QuizWithAnswer quiz) {
+    public Quiz createQuiz(@RequestBody Quiz quiz) {
         quiz.setId(nextId.getAndIncrement());
         quizzes.put(quiz.getId(), quiz);
 
         return quiz;
     }
 
+    @JsonView(Views.Public.class)
     @GetMapping("/quizzes/{id}")
     public Quiz getQuizById(@PathVariable long id) {
         if (quizzes.containsKey(id)) {
-            return new Quiz(quizzes.get(id));
+            return quizzes.get(id);
         }
 
         throw new QuizNotFound();
     }
 
+    @JsonView(Views.Public.class)
     @GetMapping("/quizzes")
     public Quiz[] getAllQuizzes() {
         return quizzes.values().toArray(Quiz[]::new);
     }
 
+    @JsonView(Views.Internal.class)
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestParam(value = "answer") int answer) {
         if (!quizzes.containsKey(id)) {
             throw new QuizNotFound();
         }
 
-        QuizWithAnswer quiz = quizzes.get(id);
+        Quiz quiz = quizzes.get(id);
 
         if (answer == quiz.getAnswer()) {
             return new QuizResponse(true, "Congratulations, you're right!");
