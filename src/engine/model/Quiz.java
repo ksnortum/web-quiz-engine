@@ -17,9 +17,10 @@ public class Quiz {
     private String[] options;
 
     @JsonView(Views.Internal.class)
-    private int answer;
+    private int[] answer;
 
-    public Quiz() { };
+    public Quiz() {
+    }
 
     public long getId() {
         return id;
@@ -37,7 +38,7 @@ public class Quiz {
         return options;
     }
 
-    public int getAnswer() {
+    public int[] getAnswer() {
         return answer;
     }
 
@@ -57,7 +58,7 @@ public class Quiz {
         this.options = options;
     }
 
-    public void setAnswer(int answer) {
+    public void setAnswer(int[] answer) {
         this.answer = answer;
     }
 }

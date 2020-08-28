@@ -2,11 +2,13 @@ package engine.logic;
 
 import com.fasterxml.jackson.annotation.JsonView;
 import engine.exception.QuizNotFound;
+import engine.model.Answer;
 import engine.model.Quiz;
 import engine.model.QuizResponse;
 import engine.model.Views;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
@@ -44,14 +46,14 @@ public class QuizController {
 
     @JsonView(Views.Internal.class)
     @PostMapping("/quizzes/{id}/solve")
-    public QuizResponse respondToAnswer(@PathVariable long id, @RequestParam(value = "answer") int answer) {
+    public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
         if (!quizzes.containsKey(id)) {
             throw new QuizNotFound();
         }
 
         Quiz quiz = quizzes.get(id);
 
-        if (answer == quiz.getAnswer()) {
+        if (Arrays.equals(answer.getAnswer(), quiz.getAnswer())) {
             return new QuizResponse(true, "Congratulations, you're right!");
         }
 
