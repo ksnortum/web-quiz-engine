@@ -8,6 +8,7 @@ import engine.model.QuizResponse;
 import engine.model.Views;
 import org.springframework.web.bind.annotation.*;
 
+import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
@@ -21,7 +22,7 @@ public class QuizController {
 
     @JsonView(Views.Internal.class)
     @PostMapping(value = "/quizzes", consumes = "application/json")
-    public Quiz createQuiz(@RequestBody Quiz quiz) {
+    public Quiz createQuiz(@Valid @RequestBody Quiz quiz) {
         quiz.setId(nextId.getAndIncrement());
         quizzes.put(quiz.getId(), quiz);
 
@@ -52,6 +53,14 @@ public class QuizController {
         }
 
         Quiz quiz = quizzes.get(id);
+
+        if (quiz.getAnswer() == null) {
+            quiz.setAnswer(new int[0]);
+        }
+
+        if (answer.getAnswer() == null) {
+            answer.setAnswer(new int[0]);
+        }
 
         if (Arrays.equals(answer.getAnswer(), quiz.getAnswer())) {
             return new QuizResponse(true, "Congratulations, you're right!");
