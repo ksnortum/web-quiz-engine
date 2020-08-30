@@ -2,13 +2,18 @@ package engine.model;
 
 import com.fasterxml.jackson.annotation.JsonView;
 
+import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.util.Arrays;
 
+@Entity
+@Table(name = "quizzes")
 public class Quiz {
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.AUTO)
     @JsonView(Views.Public.class)
     private long id;
 

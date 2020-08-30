@@ -14,7 +14,23 @@ repositories {
 sourceSets.main.resources.srcDirs = ["src/resources"]
 
 dependencies {
+
+    // original
     implementation 'org.springframework.boot:spring-boot-starter'
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
-    compile("org.springframework.boot:spring-boot-starter-web")
+
+    // add for H2
+    //implementation 'org.springframework.boot:sweb'
+    implementation 'org.springframework.boot:spring-boot-starter-jdbc'
+    implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
+
+    // original
+    //compile("org.springframework.boot:spring-boot-starter-web")
+
+    // added for H2
+    runtimeOnly 'com.h2database:h2'
+    testImplementation('org.springframework.boot:spring-boot-starter-test') {
+        exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
+    }
 }

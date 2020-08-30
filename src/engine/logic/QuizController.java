@@ -6,53 +6,48 @@ import engine.model.Answer;
 import engine.model.Quiz;
 import engine.model.QuizResponse;
 import engine.model.Views;
+import engine.persistence.QuizRepository;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
 import javax.validation.Valid;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.concurrent.atomic.AtomicLong;
+import java.util.List;
+import java.util.stream.IntStream;
 
 @RestController()
 @RequestMapping("/api")
 public class QuizController {
-    private final Map<Long, Quiz> quizzes = new HashMap<>();
-    private final AtomicLong nextId = new AtomicLong(1);
+
+    @Autowired
+    private QuizRepository quizRepository;
 
     @JsonView(Views.Internal.class)
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public Quiz createQuiz(@Valid @RequestBody Quiz quiz) {
-        quiz.setId(nextId.getAndIncrement());
-        quizzes.put(quiz.getId(), quiz);
-
-        return quiz;
+        return quizRepository.save(quiz);
     }
 
     @JsonView(Views.Public.class)
     @GetMapping("/quizzes/{id}")
     public Quiz getQuizById(@PathVariable long id) {
-        if (quizzes.containsKey(id)) {
-            return quizzes.get(id);
-        }
-
-        throw new QuizNotFound();
+        return quizRepository.findById(id).orElseThrow(QuizNotFound::new);
     }
 
     @JsonView(Views.Public.class)
     @GetMapping("/quizzes")
     public Quiz[] getAllQuizzes() {
-        return quizzes.values().toArray(Quiz[]::new);
+        List<Quiz> quizzes = quizRepository.findAll();
+        Quiz[] quizArray = new Quiz[quizzes.size()];
+        IntStream.range(0, quizzes.size()).forEach(i -> quizArray[i] = quizzes.get(i));
+
+        return quizArray;
     }
 
     @JsonView(Views.Internal.class)
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
-        if (!quizzes.containsKey(id)) {
-            throw new QuizNotFound();
-        }
-
-        Quiz quiz = quizzes.get(id);
+        Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFound::new);
 
         if (quiz.getAnswer() == null) {
             quiz.setAnswer(new int[0]);
