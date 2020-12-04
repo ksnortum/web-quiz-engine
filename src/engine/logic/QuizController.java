@@ -1,7 +1,7 @@
 package engine.logic;
 
 import com.fasterxml.jackson.annotation.JsonView;
-import engine.exception.QuizNotFound;
+import engine.exception.QuizNotFoundException;
 import engine.model.Answer;
 import engine.model.Quiz;
 import engine.model.QuizResponse;
@@ -10,6 +10,7 @@ import engine.persistence.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
+import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
@@ -31,7 +32,7 @@ public class QuizController {
     @JsonView(Views.Public.class)
     @GetMapping("/quizzes/{id}")
     public Quiz getQuizById(@PathVariable long id) {
-        return quizRepository.findById(id).orElseThrow(QuizNotFound::new);
+        return quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
     }
 
     @JsonView(Views.Public.class)
@@ -47,7 +48,7 @@ public class QuizController {
     @JsonView(Views.Internal.class)
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
-        Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFound::new);
+        Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
 
         if (quiz.getAnswer() == null) {
             quiz.setAnswer(new int[0]);
@@ -62,5 +63,16 @@ public class QuizController {
         }
 
         return new QuizResponse(false, "Wrong answer! Please, try again.");
+    }
+
+    @JsonView(Views.Internal.class)
+    @DeleteMapping("/quizzes/{id}")
+    public void deleteAQuiz(@PathVariable long id, HttpServletResponse response) {
+        if (quizRepository.existsById(id)) {
+            quizRepository.deleteById(id);
+            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+        } else {
+            throw new QuizNotFoundException();
+        }
     }
 }
