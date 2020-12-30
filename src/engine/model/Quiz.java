@@ -1,6 +1,6 @@
 package engine.model;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -14,23 +14,19 @@ public class Quiz {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @JsonView(Views.Public.class)
     private long id;
 
-    @JsonView(Views.Public.class)
     @NotBlank(message = "Title is mandatory")
     private String title;
 
-    @JsonView(Views.Public.class)
     @NotBlank(message = "Text is mandatory")
     private String text;
 
-    @JsonView(Views.Public.class)
     @NotNull(message = "Options cannot be null")
     @Size(min = 2, message = "Must have at least two options")
     private String[] options;
 
-    @JsonView(Views.Internal.class)
+    @JsonIgnore
     private int[] answer;
 
     public long getId() {

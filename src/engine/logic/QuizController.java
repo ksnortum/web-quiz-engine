@@ -1,11 +1,9 @@
 package engine.logic;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import engine.exception.QuizNotFoundException;
-import engine.model.Answer;
-import engine.model.Quiz;
-import engine.model.QuizResponse;
-import engine.model.Views;
+import engine.model.*;
+import engine.persistence.AccountRepository;
 import engine.persistence.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
@@ -23,19 +21,26 @@ public class QuizController {
     @Autowired
     private QuizRepository quizRepository;
 
-    @JsonView(Views.Internal.class)
+    @Autowired
+    private AccountRepository accountRepository;
+
+    @JsonIgnore
+    @PostMapping(value = "/register", consumes = "application/json")
+    public Account registerAccount(@Valid @RequestBody Account account) {
+        return accountRepository.save(account);
+    }
+
+    @JsonIgnore
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public Quiz createQuiz(@Valid @RequestBody Quiz quiz) {
         return quizRepository.save(quiz);
     }
 
-    @JsonView(Views.Public.class)
     @GetMapping("/quizzes/{id}")
     public Quiz getQuizById(@PathVariable long id) {
         return quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
     }
 
-    @JsonView(Views.Public.class)
     @GetMapping("/quizzes")
     public Quiz[] getAllQuizzes() {
         List<Quiz> quizzes = quizRepository.findAll();
@@ -45,7 +50,7 @@ public class QuizController {
         return quizArray;
     }
 
-    @JsonView(Views.Internal.class)
+    @JsonIgnore
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
         Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
@@ -65,7 +70,7 @@ public class QuizController {
         return new QuizResponse(false, "Wrong answer! Please, try again.");
     }
 
-    @JsonView(Views.Internal.class)
+    @JsonIgnore
     @DeleteMapping("/quizzes/{id}")
     public void deleteAQuiz(@PathVariable long id, HttpServletResponse response) {
         if (quizRepository.existsById(id)) {

@@ -1,10 +1,10 @@
 package engine.model;
 
-import com.fasterxml.jackson.annotation.JsonView;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 
 public class Answer {
 
-    @JsonView(Views.Internal.class)
+    @JsonIgnore
     private int[] answer;
 
     public int[] getAnswer() {
