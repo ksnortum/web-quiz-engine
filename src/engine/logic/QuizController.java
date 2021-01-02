@@ -1,6 +1,5 @@
 package engine.logic;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import engine.exception.QuizNotFoundException;
 import engine.model.*;
 import engine.persistence.AccountRepository;
@@ -24,13 +23,16 @@ public class QuizController {
     @Autowired
     private AccountRepository accountRepository;
 
-    @JsonIgnore
     @PostMapping(value = "/register", consumes = "application/json")
-    public Account registerAccount(@Valid @RequestBody Account account) {
+    public Account registerAccount(@Valid @RequestBody Account account, HttpServletResponse response) {
+        if (accountRepository.existsById(account.getEmail())) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return new Account();
+        }
+
         return accountRepository.save(account);
     }
 
-    @JsonIgnore
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public Quiz createQuiz(@Valid @RequestBody Quiz quiz) {
         return quizRepository.save(quiz);
@@ -50,7 +52,6 @@ public class QuizController {
         return quizArray;
     }
 
-    @JsonIgnore
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
         Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
@@ -70,7 +71,6 @@ public class QuizController {
         return new QuizResponse(false, "Wrong answer! Please, try again.");
     }
 
-    @JsonIgnore
     @DeleteMapping("/quizzes/{id}")
     public void deleteAQuiz(@PathVariable long id, HttpServletResponse response) {
         if (quizRepository.existsById(id)) {

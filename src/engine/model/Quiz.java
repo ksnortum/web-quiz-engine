@@ -1,6 +1,6 @@
 package engine.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -26,7 +26,7 @@ public class Quiz {
     @Size(min = 2, message = "Must have at least two options")
     private String[] options;
 
-    @JsonIgnore
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private int[] answer;
 
     public long getId() {

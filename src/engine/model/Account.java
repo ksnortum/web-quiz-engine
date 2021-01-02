@@ -1,6 +1,6 @@
 package engine.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
@@ -12,18 +12,12 @@ import javax.validation.constraints.Size;
 public class Account {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.AUTO)
-    private long id;
-
-    @Pattern(regexp = "^[^@]+@[^.]+\\..+$")
-    @Column(unique = true)
-    @NotBlank(message = "Email cannot be null")
+    @Pattern(regexp = "^[^@]+@[^.]+\\..+$", message = "Invalid email")
+    @NotBlank(message = "Email cannot be blank")
     private String email;
 
-    //@Min(5)
-    //@Length(...)
-    @JsonIgnore
     @Size(min = 5, message = "Password must be at least 5 in length")
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String password;
 
     public String getEmail() {
