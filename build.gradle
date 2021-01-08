@@ -20,13 +20,12 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
     // add for H2
-    //implementation 'org.springframework.boot:sweb'
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-web'
     implementation 'org.springframework.boot:spring-boot-starter-data-jpa'
 
-    // original
-    //compile("org.springframework.boot:spring-boot-starter-web")
+    // Spring Security
+    implementation 'org.springframework.boot:spring-boot-starter-security'
 
     // added for H2
     runtimeOnly 'com.h2database:h2'
