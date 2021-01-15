@@ -22,6 +22,9 @@ public class Quiz {
     @NotBlank(message = "Text is mandatory")
     private String text;
 
+    @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
+    private String creator;
+
     @NotNull(message = "Options cannot be null")
     @Size(min = 2, message = "Must have at least two options")
     private String[] options;
@@ -45,6 +48,10 @@ public class Quiz {
         return options;
     }
 
+    public String getCreator() {
+        return creator;
+    }
+
     public int[] getAnswer() {
         return answer;
     }
@@ -61,6 +68,10 @@ public class Quiz {
         this.text = text;
     }
 
+    public void setCreator(String creator) {
+        this.creator = creator;
+    }
+
     public void setOptions(String[] options) {
         this.options = options;
     }
@@ -72,10 +83,11 @@ public class Quiz {
     @Override
     public String toString() {
         return String.format(
-                "id=%d; title=\"%s\"; text=\"%s\"; options=%s; answer=%s",
+                "id=%d; title=\"%s\"; text=\"%s\"; creator=\"%s\"; options=%s; answer=%s",
                 getId(),
                 getTitle(),
                 getText(),
+                getCreator(),
                 Arrays.toString(getOptions()),
                 Arrays.toString(getAnswer())
         );

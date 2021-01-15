@@ -5,6 +5,8 @@ import engine.model.*;
 import engine.persistence.AccountRepository;
 import engine.persistence.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
@@ -30,11 +32,17 @@ public class QuizController {
             return new Account();
         }
 
+        String encodedPassword = new BCryptPasswordEncoder().encode(account.getPassword());
+        account.setPassword(encodedPassword);
+
         return accountRepository.save(account);
     }
 
     @PostMapping(value = "/quizzes", consumes = "application/json")
     public Quiz createQuiz(@Valid @RequestBody Quiz quiz) {
+        String creator = SecurityContextHolder.getContext().getAuthentication().getName();
+        quiz.setCreator(creator);
+
         return quizRepository.save(quiz);
     }
 
@@ -74,8 +82,15 @@ public class QuizController {
     @DeleteMapping("/quizzes/{id}")
     public void deleteAQuiz(@PathVariable long id, HttpServletResponse response) {
         if (quizRepository.existsById(id)) {
-            quizRepository.deleteById(id);
-            response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            Quiz quiz = quizRepository.getOne(id);
+            String authorizedName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+            if (!quiz.getCreator().equals(authorizedName)) {
+                response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            } else {
+                quizRepository.deleteById(id);
+                response.setStatus(HttpServletResponse.SC_NO_CONTENT);
+            }
         } else {
             throw new QuizNotFoundException();
         }
