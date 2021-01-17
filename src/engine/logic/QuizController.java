@@ -2,8 +2,9 @@ package engine.logic;
 
 import engine.exception.QuizNotFoundException;
 import engine.model.*;
-import engine.persistence.AccountService;
-import engine.persistence.QuizService;
+import engine.service.AccountService;
+import engine.service.CompletionService;
+import engine.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -11,6 +12,7 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
+import java.time.LocalDateTime;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -25,6 +27,9 @@ public class QuizController {
 
     @Autowired
     private AccountService accountService;
+
+    @Autowired
+    private CompletionService completionService;
 
     @PostMapping(value = "/register", consumes = "application/json")
     public Account registerAccount(@Valid @RequestBody Account account, HttpServletResponse response) {
@@ -75,6 +80,13 @@ public class QuizController {
         }
 
         if (Arrays.equals(answer.getAnswer(), quiz.getAnswer())) {
+            // Update Completion
+            Completion completion = new Completion();
+            completion.setId(quiz.getId());
+            completion.setAccountId(quiz.getCreator());
+            completion.setCompletedAt(LocalDateTime.now());
+            completionService.save(completion);
+
             return new QuizResponse(true, "Congratulations, you're right!");
         }
 
@@ -98,5 +110,12 @@ public class QuizController {
         } else {
             throw new QuizNotFoundException();
         }
+    }
+
+    @GetMapping("quizzes/completed")
+    public List<Completion> findAllCompletionsByAccount() {
+        String authorizedName = SecurityContextHolder.getContext().getAuthentication().getName();
+
+        return completionService.findAllCompletionsByAccount(authorizedName);
     }
 }

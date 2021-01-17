@@ -22,6 +22,7 @@ public class Quiz {
     @NotBlank(message = "Text is mandatory")
     private String text;
 
+    // Account ID (email)
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String creator;
 

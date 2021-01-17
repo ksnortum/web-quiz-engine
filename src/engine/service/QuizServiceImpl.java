@@ -1,6 +1,7 @@
-package engine.persistence;
+package engine.service;
 
 import engine.model.Quiz;
+import engine.persistence.QuizRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
