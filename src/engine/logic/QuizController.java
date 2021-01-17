@@ -2,8 +2,8 @@ package engine.logic;
 
 import engine.exception.QuizNotFoundException;
 import engine.model.*;
-import engine.persistence.AccountRepository;
-import engine.persistence.QuizRepository;
+import engine.persistence.AccountService;
+import engine.persistence.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -13,6 +13,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.stream.IntStream;
 
 @RestController()
@@ -20,22 +21,23 @@ import java.util.stream.IntStream;
 public class QuizController {
 
     @Autowired
-    private QuizRepository quizRepository;
+    private QuizService quizService;
 
     @Autowired
-    private AccountRepository accountRepository;
+    private AccountService accountService;
 
     @PostMapping(value = "/register", consumes = "application/json")
     public Account registerAccount(@Valid @RequestBody Account account, HttpServletResponse response) {
-        if (accountRepository.existsById(account.getEmail())) {
+        if (accountService.existsByEmail(account.getEmail())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
             return new Account();
         }
 
         String encodedPassword = new BCryptPasswordEncoder().encode(account.getPassword());
         account.setPassword(encodedPassword);
 
-        return accountRepository.save(account);
+        return accountService.save(account);
     }
 
     @PostMapping(value = "/quizzes", consumes = "application/json")
@@ -43,17 +45,17 @@ public class QuizController {
         String creator = SecurityContextHolder.getContext().getAuthentication().getName();
         quiz.setCreator(creator);
 
-        return quizRepository.save(quiz);
+        return quizService.save(quiz);
     }
 
     @GetMapping("/quizzes/{id}")
     public Quiz getQuizById(@PathVariable long id) {
-        return quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
+        return quizService.findById(id).orElseThrow(QuizNotFoundException::new);
     }
 
     @GetMapping("/quizzes")
     public Quiz[] getAllQuizzes() {
-        List<Quiz> quizzes = quizRepository.findAll();
+        List<Quiz> quizzes = quizService.findAll();
         Quiz[] quizArray = new Quiz[quizzes.size()];
         IntStream.range(0, quizzes.size()).forEach(i -> quizArray[i] = quizzes.get(i));
 
@@ -62,7 +64,7 @@ public class QuizController {
 
     @PostMapping("/quizzes/{id}/solve")
     public QuizResponse respondToAnswer(@PathVariable long id, @RequestBody Answer answer) {
-        Quiz quiz = quizRepository.findById(id).orElseThrow(QuizNotFoundException::new);
+        Quiz quiz = quizService.findById(id).orElseThrow(QuizNotFoundException::new);
 
         if (quiz.getAnswer() == null) {
             quiz.setAnswer(new int[0]);
@@ -81,14 +83,16 @@ public class QuizController {
 
     @DeleteMapping("/quizzes/{id}")
     public void deleteAQuiz(@PathVariable long id, HttpServletResponse response) {
-        if (quizRepository.existsById(id)) {
-            Quiz quiz = quizRepository.getOne(id);
+        Optional<Quiz> optionalQuiz = quizService.findById(id);
+
+        if (optionalQuiz.isPresent()) {
+            Quiz quiz = optionalQuiz.get();
             String authorizedName = SecurityContextHolder.getContext().getAuthentication().getName();
 
             if (!quiz.getCreator().equals(authorizedName)) {
                 response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             } else {
-                quizRepository.deleteById(id);
+                quizService.deleteById(id);
                 response.setStatus(HttpServletResponse.SC_NO_CONTENT);
             }
         } else {
