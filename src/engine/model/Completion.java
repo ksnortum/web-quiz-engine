@@ -7,6 +7,7 @@ import javax.validation.constraints.Min;
 import javax.validation.constraints.NotBlank;
 import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
+import java.util.Objects;
 
 @Entity
 @Table(name = "completions")
@@ -56,5 +57,38 @@ public class Completion {
 
     public void setCompletedAt(LocalDateTime completedAt) {
         this.completedAt = completedAt;
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) {
+            return true;
+        }
+
+        if (o == null || getClass() != o.getClass()) {
+            return false;
+        }
+
+        Completion that = (Completion) o;
+
+        return getCompletionId() == that.getCompletionId()
+                && getId() == that.getId()
+                && getAccountId().equals(that.getAccountId())
+                && getCompletedAt().equals(that.getCompletedAt());
+    }
+
+    @Override
+    public int hashCode() {
+        return Objects.hash(getCompletionId(), getAccountId(), getId(), getCompletedAt());
+    }
+
+    @Override
+    public String toString() {
+        return "Completion{" +
+                "completionId=" + completionId +
+                ", accountId='" + accountId + '\'' +
+                ", id=" + id +
+                ", completedAt=" + completedAt +
+                '}';
     }
 }

@@ -6,6 +6,7 @@ import engine.service.AccountService;
 import engine.service.CompletionService;
 import engine.service.QuizService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.*;
@@ -14,9 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.Valid;
 import java.time.LocalDateTime;
 import java.util.Arrays;
-import java.util.List;
 import java.util.Optional;
-import java.util.stream.IntStream;
 
 @RestController()
 @RequestMapping("/api")
@@ -59,12 +58,11 @@ public class QuizController {
     }
 
     @GetMapping("/quizzes")
-    public Quiz[] getAllQuizzes() {
-        List<Quiz> quizzes = quizService.findAll();
-        Quiz[] quizArray = new Quiz[quizzes.size()];
-        IntStream.range(0, quizzes.size()).forEach(i -> quizArray[i] = quizzes.get(i));
-
-        return quizArray;
+    public Page<Quiz> getAllQuizzes(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "id") String sortBy) {
+        return quizService.getAllQuizzes(page, pageSize, sortBy);
     }
 
     @PostMapping("/quizzes/{id}/solve")
@@ -79,18 +77,20 @@ public class QuizController {
             answer.setAnswer(new int[0]);
         }
 
-        if (Arrays.equals(answer.getAnswer(), quiz.getAnswer())) {
-            // Update Completion
-            Completion completion = new Completion();
-            completion.setId(quiz.getId());
-            completion.setAccountId(quiz.getCreator());
-            completion.setCompletedAt(LocalDateTime.now());
-            completionService.save(completion);
-
-            return new QuizResponse(true, "Congratulations, you're right!");
+        if (!Arrays.equals(answer.getAnswer(), quiz.getAnswer())) {
+            return new QuizResponse(false, "Wrong answer! Please, try again.");
         }
 
-        return new QuizResponse(false, "Wrong answer! Please, try again.");
+        // Update Completion
+        String authorizedName = SecurityContextHolder.getContext().getAuthentication().getName();
+        Completion completion = new Completion();
+        completion.setId(quiz.getId());
+        completion.setAccountId(authorizedName);
+        completion.setCompletedAt(LocalDateTime.now());
+        completionService.save(completion);
+
+        return new QuizResponse(true, "Congratulations, you're right!");
+
     }
 
     @DeleteMapping("/quizzes/{id}")
@@ -113,9 +113,12 @@ public class QuizController {
     }
 
     @GetMapping("quizzes/completed")
-    public List<Completion> findAllCompletionsByAccount() {
+    public Page<Completion> findAllCompletionsByAccount(
+            @RequestParam(defaultValue = "0") Integer page,
+            @RequestParam(defaultValue = "10") Integer pageSize,
+            @RequestParam(defaultValue = "completedAt") String sortBy) {
         String authorizedName = SecurityContextHolder.getContext().getAuthentication().getName();
 
-        return completionService.findAllCompletionsByAccount(authorizedName);
+        return completionService.getAllCompletions(page, pageSize, sortBy, authorizedName);
     }
 }

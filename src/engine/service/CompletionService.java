@@ -1,10 +1,9 @@
 package engine.service;
 
 import engine.model.Completion;
-
-import java.util.List;
+import org.springframework.data.domain.Page;
 
 public interface CompletionService {
     Completion save(Completion completion);
-    List<Completion> findAllCompletionsByAccount(String accountId);
+    Page<Completion> getAllCompletions(Integer pageNo, Integer pageSize, String sortBy, String accountId);
 }

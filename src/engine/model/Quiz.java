@@ -22,7 +22,7 @@ public class Quiz {
     @NotBlank(message = "Text is mandatory")
     private String text;
 
-    // Account ID (email)
+    /** Account ID (email) */
     @JsonProperty(access = JsonProperty.Access.WRITE_ONLY)
     private String creator;
 
@@ -84,7 +84,7 @@ public class Quiz {
     @Override
     public String toString() {
         return String.format(
-                "id=%d; title=\"%s\"; text=\"%s\"; creator=\"%s\"; options=%s; answer=%s",
+                "Quiz: id=%d; title=\"%s\"; text=\"%s\"; creator=\"%s\"; options=%s; answer=%s",
                 getId(),
                 getTitle(),
                 getText(),
